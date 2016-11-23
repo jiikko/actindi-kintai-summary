@@ -1,24 +1,25 @@
 # Actindi::KintaiSummary
+* アクトインディ社で入力している勤怠スプレットシートの入力内容をサマライズするコマンドラインツールです
+* 不足している時間などがわかります
 
+## 正しい出力を得るための勤怠スプレットシート入力ルール
+* 有給を取得している日に労働時間を記入しない
+* 有給を取得している日はコメント欄に'有給'の2文字を入力する
+
+## Requirements
+* 'ruby' >= '2.2'
 
 ## Installation
-
-Add this line to your application's Gemfile:
-
 ```ruby
-gem 'actindi-kintai_summary'
+$ git clone https://github.com/jiikko/actindi-kintai-summary.git
+$ cd actindi-kintai-summary
 ```
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install actindi-kintai_summary
-
 ## Usage
-```ruby
+* 当月のA列からO列(コメント)までをコピーして、テキストファイルに保存します
+* kintai_summaryコマンドの引数にそのテキストファイルを渡してください
+
+```shell
 $ cat kintai
 2016/11/01	 11 		火			10:00	18:00						8:00	\-1.0
 2016/11/02	 11 		水										0:00	有給休暇
@@ -65,13 +66,3 @@ $ ./bin/kintai_summary kintai
   11/29(火)
   11/30(水)
 ```
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/actindi-kintai_summary.

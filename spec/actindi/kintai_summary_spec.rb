@@ -14,9 +14,9 @@ describe Actindi::KintaiSummary do
               Time.new(2016, 11, 3, 10, 0, 0),
               Time.new(2016, 11, 3, 19, 0, 0),
             ])
-            expect(line.working_hours).to eq(8.0)
+            expect(line.worked_hours).to eq(8.0)
             expect(line.break_time).to eq(1.0)
-            expect(line.embedded_working_hours).to eq(8)
+            expect(line.embedded_worked_hours).to eq(8)
             expect(line.comment).to eq('ううう')
             expect(line.holiday?).to eq(true)
           end
@@ -31,9 +31,9 @@ describe Actindi::KintaiSummary do
               Time.new(2016, 11, 11,  9, 0, 0),
               Time.new(2016, 11, 11, 19, 0, 0),
             ])
-            expect(line.working_hours).to eq(9.0)
+            expect(line.worked_hours).to eq(9.0)
             expect(line.break_time).to eq(1.0)
-            expect(line.embedded_working_hours).to eq(9)
+            expect(line.embedded_worked_hours).to eq(9)
             expect(line.comment).to eq('あああ')
             expect(line.holiday?).to eq(false)
           end
@@ -46,7 +46,7 @@ describe Actindi::KintaiSummary do
               Time.new(2016, 11, 4, 10, 0, 0),
               Time.new(2016, 11, 4, 19, 0, 0),
             ])
-            expect(line.working_hours).to eq(8.0)
+            expect(line.worked_hours).to eq(8.0)
             expect(line.break_time).to eq(1.0)
             expect(line.comment).to eq(nil)
             expect(line.holiday?).to eq(false)
@@ -61,9 +61,9 @@ describe Actindi::KintaiSummary do
             Time.new(2016, 11, 1, 10, 0, 0),
             Time.new(2016, 11, 1, 18, 0, 0),
           ])
-          expect(line.working_hours).to eq(8.0)
+          expect(line.worked_hours).to eq(8.0)
           expect(line.break_time).to eq(0)
-          expect(line.embedded_working_hours(to_i: false)).to eq('8:00')
+          expect(line.embedded_worked_hours(to_i: false)).to eq('8:00')
           expect(line.comment).to eq('味噌')
           expect(line.holiday?).to eq(false)
         end
@@ -76,7 +76,7 @@ describe Actindi::KintaiSummary do
           line = Actindi::KintaiSummary::Parser::Line.new(line_text)
           expect(line.day).to eq(Date.new(2016, 11, 03))
           expect(line.sections).to eq([])
-          expect(line.working_hours).to eq(0)
+          expect(line.worked_hours).to eq(0)
           expect(line.comment).to eq(nil)
           expect(line.holiday?).to eq(true)
         end
@@ -87,8 +87,8 @@ describe Actindi::KintaiSummary do
           line = Actindi::KintaiSummary::Parser::Line.new(line_text)
           expect(line.day).to eq(Date.new(2016, 11, 16))
           expect(line.sections).to eq([])
-          expect(line.working_hours).to eq(0)
-          expect(line.embedded_working_hours(to_i: false)).to eq('0:00')
+          expect(line.worked_hours).to eq(0)
+          expect(line.embedded_worked_hours(to_i: false)).to eq('0:00')
           expect(line.comment).to eq('有給消化')
           expect(line.holiday?).to eq(false)
         end
@@ -135,10 +135,8 @@ describe Actindi::KintaiSummary do
         KINTAI
       end
       it 'return current_time' do
-        summary = Actindi::KintaiSummary.parse(kintai)
-        summary.should_working_hours
-        summary.current_working_hours
-        summary.left_working_hours_from_now
+        s = Actindi::KintaiSummary.parse(kintai)
+        binding.pry
       end
     end
   end

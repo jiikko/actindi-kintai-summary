@@ -10,13 +10,17 @@ module Actindi
         end
 
         def day
+          Date.new(*day_to_a)
+        end
+
+        def day_to_a
           %r!^(\d{4}/\d{2}/\d{2})! =~ @line
-          $1.split(/\//)
+          $1.split(/\//).map(&:to_i)
         end
 
         def sections
           sections_to_s.map { |start_time, end_time|
-            [Time.new(*day, start_time), Time.new(*day, end_time)]
+            [Time.new(*day_to_a, start_time), Time.new(*day_to_a, end_time)]
           }
         end
 
@@ -29,7 +33,7 @@ module Actindi
           end
         end
 
-        def embedded_working_hour(to_i: true)
+        def embedded_working_hours(to_i: true)
           if break_time(to_i: false) && \
             /(#{time_regexp_format})\t(#{time_regexp_format})/ =~ meta_text
             to_i ? $2.to_i : $2
@@ -39,7 +43,7 @@ module Actindi
           end
         end
 
-        def working_hour
+        def working_hours
           local_working_hour = sections.map { |start_time, end_time|
             (end_time - start_time) / 3600 # to_hoor
           }.inject(:+) || 0
@@ -47,7 +51,7 @@ module Actindi
         end
 
         def comment
-          if /#{embedded_working_hour(to_i: false)}(.+)/ =~ meta_text
+          if /#{embedded_working_hours(to_i: false)}(.+)/ =~ meta_text
             $1.strip
           end
         end
@@ -74,7 +78,7 @@ module Actindi
           /\t.?1.?\t#{Regexp.union(week_names)}/ === @line
         end
 
-        def working_day?
+        def should_working_day?
           !(holiday? || vacatin?)
         end
 
@@ -110,23 +114,38 @@ module Actindi
         end
       end
 
-      def left_time
-        @line_list.left_time
+      def current_working_hours
+        @line_list.map(&:working_hours).inject(:+)
       end
 
-      def over_time
+      def should_working_hours
+        should_working_days * working_hour_of_day
       end
 
-      def over_time?
+      def should_working_days
+        @line_list.select(&:should_working_day?).size
       end
 
-      def current_working_hour
-        @line_list.map { |line| line.working_hour }.inject(:+)
+      def left_working_hours_from_now
+        (should_working_hours - worked_hours) / future_line_list.size
       end
 
-      def should_working_hour
-        @line_list.select { |line| line.working_day? }.size * working_hour_of_day
+      def worked_hours
+        past_line_list.select(&:should_working_day?). \
+          map(&:working_hours). \
+          inject(&:+)
       end
+
+      def past_line_list
+        today = Date.today
+        @line_list.select { |line| line.day < today }
+      end
+
+      def future_line_list
+        @line_list - past_line_list
+      end
+
+      private
 
       def working_hour_of_day
         8

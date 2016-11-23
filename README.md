@@ -51,11 +51,9 @@ kintai = <<-KINTAI
 2016/11/29	 11 		火										0:00
 2016/11/30	 11 		水										0:00
 KINTAI
-summray = Actindi::KintaiSummary.parse(kintai)
-summray.left_time
-summray.over_time
-summray.current_time
-summray.over_time?
+s = Actindi::KintaiSummary.parse(kintai)
+puts "worked hours: #{s.worked_hours}"
+
 ```
 
 ## Development

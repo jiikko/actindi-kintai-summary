@@ -4,23 +4,23 @@ require 'date'
 module Actindi
   module KintaiSummary
     class Parser
-      class Line
+      class WorkingDay
         def initialize(line)
           @line = line
         end
 
-        def day
-          Date.new(*day_to_a)
+        def to_date
+          Date.new(*to_date_with_array)
         end
 
-        def day_to_a
+        def to_date_with_array
           %r!^(\d{4}/\d{2}/\d{2})! =~ @line
           $1.split(/\//).map(&:to_i)
         end
 
         def sections
           sections_to_s.map { |start_time, end_time|
-            [Time.new(*day_to_a, start_time), Time.new(*day_to_a, end_time)]
+            [Time.new(*to_date_with_array, start_time), Time.new(*to_date_with_array, end_time)]
           }
         end
 
@@ -108,14 +108,18 @@ module Actindi
       end
 
       def initialize(text)
-        @line_list = []
+        @list = []
         text.split(/\r\n|\n/).each do |text_line|
-          @line_list << Line.new(text_line)
+          @list << WorkingDay.new(text_line)
         end
       end
 
       def left_average_working_hours
-        left_working_hours_from_now / future_line_list.size.to_f
+        left_working_hours_from_now / future_list.size.to_f
+      end
+
+      def past_average_working_hours
+        worked_hours / past_list.size.to_f
       end
 
       def should_working_hours_of_month
@@ -123,10 +127,7 @@ module Actindi
       end
 
       def should_working_days_of_month
-        @line_list.select(&:should_working_day?)
-      end
-
-      def over_worked_hours_from_now
+        @list.select(&:should_working_day?)
       end
 
       def left_working_hours_from_now
@@ -134,20 +135,26 @@ module Actindi
       end
 
       def worked_hours
-        past_line_list.map(&:worked_hours).inject(&:+)
+        past_list.map(&:worked_hours).inject(&:+)
       end
 
-      def past_line_list
+      def past_list
         today = Date.today
-        @line_list.select(&:should_working_day?).select { |line| line.day < today }
+        @list.select(&:should_working_day?).select { |working_day|
+          working_day.to_date < today
+        }
       end
 
-      def future_line_list
-        (@line_list - past_line_list).select(&:should_working_day?)
+      def future_list
+        (@list - past_list).select(&:should_working_day?)
       end
 
       def should_worked_hours_from_now
-        past_line_list.map(&:worked_hours).inject(:+)
+        past_list.map(&:worked_hours).inject(:+)
+      end
+
+      def find(yyyy_mm_dd)
+        @list.find { |x| x.to_date == Date.parse(yyyy_mm_dd) }
       end
 
       private

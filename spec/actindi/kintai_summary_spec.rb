@@ -3,22 +3,76 @@ require 'pry'
 
 describe Actindi::KintaiSummary do
   describe Actindi::KintaiSummary::Parser::Line do
-    context 'simpe format' do
-      it 'be success' do
-        line_text = "2016/11/01	 11 		火			10:00	18:00						8:00"
-        line = Actindi::KintaiSummary::Parser::Line.new(line_text)
-        expect(line.day).to eq(Date.new(2016, 11, 1))
-        expect(line.working_sections.first).to eq([
-          Date.new(2016, 11, 1, 18, 0, 0),
-          Date.new(2016, 11, 1, 18, 0, 0),
-        ])
+    context '労働あり' do
+      context '休日' do
+        context '休憩あり' do
+          it 'be success' do
+            line_text = "2016/11/03	 11 	 1 	木			10:00	19:00					1:00	8:00 ううう"
+            line = Actindi::KintaiSummary::Parser::Line.new(line_text)
+            expect(line.sections.first).to eq([
+              Time.new(2016, 11, 3, 10, 0, 0),
+              Time.new(2016, 11, 3, 19, 0, 0),
+            ])
+            expect(line.working_hour).to eq(8.0)
+            expect(line.break_time).to eq(1.0)
+            expect(line.embedded_working_hour).to eq(8)
+            expect(line.comment).to eq('ううう')
+            expect(line.holiday?).to eq(true)
+          end
+        end
+      end
+      context '休憩あり' do
+        it 'be success' do
+          line_text = "2016/11/04	 11 		金			10:00	19:00					1:00	8:00"
+          line = Actindi::KintaiSummary::Parser::Line.new(line_text)
+          expect(line.sections.first).to eq([
+            Time.new(2016, 11, 4, 10, 0, 0),
+            Time.new(2016, 11, 4, 19, 0, 0),
+          ])
+          expect(line.working_hour).to eq(8.0)
+          expect(line.break_time).to eq(1.0)
+          expect(line.comment).to eq(nil)
+          expect(line.holiday?).to eq(false)
+        end
+      end
+      context '休憩なし' do
+        it 'be success' do
+          line_text = "2016/11/01	 11 		火			10:00	18:00						8:00	味噌"
+          line = Actindi::KintaiSummary::Parser::Line.new(line_text)
+          expect(line.sections.first).to eq([
+            Time.new(2016, 11, 1, 10, 0, 0),
+            Time.new(2016, 11, 1, 18, 0, 0),
+          ])
+          expect(line.working_hour).to eq(8.0)
+          expect(line.break_time).to eq(0)
+          expect(line.embedded_working_hour(to_i: false)).to eq('8:00')
+          expect(line.comment).to eq('味噌')
+          expect(line.holiday?).to eq(false)
+        end
       end
     end
-    context 'do\'t work' do
-      context 'has holiday flag' do
+    context '労働なし' do
+      context '休日' do
         it 'be success' do
           line_text = "2016/11/03	 11 	 1 	木										0:00"
           line = Actindi::KintaiSummary::Parser::Line.new(line_text)
+          expect(line.day).to eq(%w(2016 11 03))
+          expect(line.sections).to eq([])
+          expect(line.working_hour).to eq(0)
+          expect(line.comment).to eq(nil)
+          expect(line.holiday?).to eq(true)
+        end
+      end
+      context '平日' do
+        it 'be success' do
+          line_text = "2016/11/16	 11 		水										0:00	有給消化"
+          line = Actindi::KintaiSummary::Parser::Line.new(line_text)
+          expect(line.day).to eq(%w(2016 11 16))
+          expect(line.sections).to eq([])
+          expect(line.working_hour).to eq(0)
+          expect(line.embedded_working_hour(to_i: false)).to eq('0:00')
+          expect(line.comment).to eq('有給消化')
+          expect(line.holiday?).to eq(false)
         end
       end
     end

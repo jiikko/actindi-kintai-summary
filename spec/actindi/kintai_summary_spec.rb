@@ -4,6 +4,7 @@ require 'pry'
 describe Actindi::KintaiSummary do
   describe Actindi::KintaiSummary::Parser::Line do
     context '労働あり' do
+
       context '休日' do
         context '休憩あり' do
           it 'be success' do
@@ -21,18 +22,35 @@ describe Actindi::KintaiSummary do
           end
         end
       end
-      context '休憩あり' do
-        it 'be success' do
-          line_text = "2016/11/04	 11 		金			10:00	19:00					1:00	8:00"
-          line = Actindi::KintaiSummary::Parser::Line.new(line_text)
-          expect(line.sections.first).to eq([
-            Time.new(2016, 11, 4, 10, 0, 0),
-            Time.new(2016, 11, 4, 19, 0, 0),
-          ])
-          expect(line.working_hour).to eq(8.0)
-          expect(line.break_time).to eq(1.0)
-          expect(line.comment).to eq(nil)
-          expect(line.holiday?).to eq(false)
+      context '平日' do
+        context '休憩あり' do
+          it 'be success' do
+            line_text = "2016/11/11	 11 		金			9:00	19:00					1:00	9:00	あああ"
+            line = Actindi::KintaiSummary::Parser::Line.new(line_text)
+            expect(line.sections.first).to eq([
+              Time.new(2016, 11, 11,  9, 0, 0),
+              Time.new(2016, 11, 11, 19, 0, 0),
+            ])
+            expect(line.working_hour).to eq(9.0)
+            expect(line.break_time).to eq(1.0)
+            expect(line.embedded_working_hour).to eq(9)
+            expect(line.comment).to eq('あああ')
+            expect(line.holiday?).to eq(false)
+          end
+        end
+        context '休憩あり' do
+          it 'be success' do
+            line_text = "2016/11/04	 11 		金			10:00	19:00					1:00	8:00"
+            line = Actindi::KintaiSummary::Parser::Line.new(line_text)
+            expect(line.sections.first).to eq([
+              Time.new(2016, 11, 4, 10, 0, 0),
+              Time.new(2016, 11, 4, 19, 0, 0),
+            ])
+            expect(line.working_hour).to eq(8.0)
+            expect(line.break_time).to eq(1.0)
+            expect(line.comment).to eq(nil)
+            expect(line.holiday?).to eq(false)
+          end
         end
       end
       context '休憩なし' do
@@ -118,7 +136,9 @@ describe Actindi::KintaiSummary do
       end
       it 'return current_time' do
         summary = Actindi::KintaiSummary.parse(kintai)
-        summary.current_time
+        summary.should_working_hour
+        summary.current_working_hour
+        binding.pry
       end
     end
   end

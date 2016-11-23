@@ -81,13 +81,17 @@ module Actindi
         private
 
         def sections_to_s
-          times_text.scan(/\d{2}:\d{2}\t\d{2}:\d{2}/).map { |string_time|
+          prev_end_time = nil
+          times_text.scan(/#{time_regexp_format}\t#{time_regexp_format}/).inject([]) { |a, string_time|
             start_time = string_time.split("\t").first
             end_time = string_time.split("\t").last
-            if start_time.to_i < end_time.to_i
-              [start_time, end_time]
+            if prev_end_time && prev_end_time.to_i > end_time.to_i
+              break(a)
+            else
+              prev_end_time = end_time
+              a << [start_time, end_time]
             end
-          }.compact
+          }
         end
 
         def time_regexp_format
@@ -101,7 +105,7 @@ module Actindi
 
       def initialize(text)
         @line_list = []
-        text.split(/\r\n|\r/).each do |text_line|
+        text.split(/\r\n|\n/).each do |text_line|
           @line_list << Line.new(text_line)
         end
       end
@@ -116,7 +120,16 @@ module Actindi
       def over_time?
       end
 
-      def current_time
+      def current_working_hour
+        @line_list.map { |line| line.working_hour }.inject(:+)
+      end
+
+      def should_working_hour
+        @line_list.select { |line| line.working_day? }.size * working_hour_of_day
+      end
+
+      def working_hour_of_day
+        8
       end
     end
 

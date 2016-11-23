@@ -16,9 +16,11 @@ s = Actindi::KintaiSummary.parse(kintai)
 puts <<-EOH
 [#{s.list.first.to_date} 〜 #{s.list.last.to_date}]
 現在: #{s.worked_hours} / #{s.should_working_hours_of_month} 時間
-
+平均労働時間: #{s.average_worked_hours}
 残り出勤日を: 1日あたり#{s.left_average_working_hours} 時間働くとボーダを超えます
+有給使用日数: #{s.paid_holidays.size} 日
 残出勤日数: #{s.left_working_days} 日
-#{s.future_list.map { |d| d.to_date_with_format }.join("\n")}
+残出勤日:
+#{s.future_list.map { |d| "  #{d.to_date_with_format}" }.join("\n")}
 
 EOH

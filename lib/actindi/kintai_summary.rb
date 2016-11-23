@@ -74,7 +74,7 @@ module Actindi
           end
         end
 
-        def vacatin?
+        def paid_holiday?
           meta_text.include?('有給')
         end
 
@@ -83,7 +83,7 @@ module Actindi
         end
 
         def should_working_day?
-          !(holiday? || vacatin?)
+          !(holiday? || paid_holiday?)
         end
 
         private
@@ -122,7 +122,7 @@ module Actindi
         left_working_hours_from_now / future_list.size.to_f
       end
 
-      def past_average_working_hours
+      def average_worked_hours
         worked_hours / past_list.size.to_f
       end
 
@@ -159,6 +159,14 @@ module Actindi
 
       def find(yyyy_mm_dd)
         @list.find { |x| x.to_date == Date.parse(yyyy_mm_dd) }
+      end
+
+      def find(yyyy_mm_dd)
+        @list.find { |x| x.to_date == Date.parse(yyyy_mm_dd) }
+      end
+
+      def paid_holidays
+        @list.select(&:paid_holiday?)
       end
 
       def list

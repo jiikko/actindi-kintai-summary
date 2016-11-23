@@ -13,6 +13,10 @@ module Actindi
           Date.new(*to_date_with_array)
         end
 
+        def to_date_with_format
+          to_date.strftime("%m/%d(#{week_names[to_date.wday]})")
+        end
+
         def to_date_with_array
           %r!^(\d{4}/\d{2}/\d{2})! =~ @line
           $1.split(/\//).map(&:to_i)
@@ -134,6 +138,10 @@ module Actindi
         should_working_hours_of_month - worked_hours
       end
 
+      def left_working_days
+        future_list.size
+      end
+
       def worked_hours
         past_list.map(&:worked_hours).inject(&:+)
       end
@@ -149,12 +157,12 @@ module Actindi
         (@list - past_list).select(&:should_working_day?)
       end
 
-      def should_worked_hours_from_now
-        past_list.map(&:worked_hours).inject(:+)
-      end
-
       def find(yyyy_mm_dd)
         @list.find { |x| x.to_date == Date.parse(yyyy_mm_dd) }
+      end
+
+      def list
+        @list
       end
 
       private

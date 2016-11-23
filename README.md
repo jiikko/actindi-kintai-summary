@@ -19,7 +19,7 @@ Or install it yourself as:
 
 ## Usage
 ```ruby
-kintai = <<-KINTAI
+$ cat kintai
 2016/11/01	 11 		火			10:00	18:00						8:00	\-1.0
 2016/11/02	 11 		水										0:00	有給休暇
 2016/11/03	 11 	 1 	木										0:00
@@ -50,10 +50,18 @@ kintai = <<-KINTAI
 2016/11/28	 11 		月										0:00
 2016/11/29	 11 		火										0:00
 2016/11/30	 11 		水										0:00
-KINTAI
-s = Actindi::KintaiSummary.parse(kintai)
-puts "worked hours: #{s.worked_hours}"
 
+$ ./bin/kintai_summary kintai
+[2016-11-01 〜 2016-11-30]
+現在: 103.0 / 144 時間
+
+残り出勤日を: 1日あたり8.2 時間働くとボーダを超えます
+残出勤日数: 5 日
+11/24(木)
+11/25(金)
+11/28(月)
+11/29(火)
+11/30(水)
 ```
 
 ## Development

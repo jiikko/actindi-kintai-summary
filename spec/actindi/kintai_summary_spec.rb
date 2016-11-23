@@ -4,7 +4,6 @@ require 'pry'
 describe Actindi::KintaiSummary do
   describe Actindi::KintaiSummary::Parser::WorkingDay do
     context '労働あり' do
-
       context '休日' do
         context '休憩あり' do
           it 'be success' do
